@@ -4,8 +4,8 @@ platform_version = node["platform_version"].to_f
 case platform_family
 when "debian"
   case platform
-  when "debian"
 
+  when "debian"
     if platform_version >= 9.0
       package "borgbackup"
    
@@ -18,6 +18,9 @@ when "debian"
       apt_package "borgbackup" do
         options "-t jessie-backports"
       end
+      package "borgbackup"
+    else
+      raise 'unsupported Debian Version'
     end
 
   when "ubuntu"
@@ -32,6 +35,8 @@ when "debian"
         distribution ( lsb_codename == "wily" ? lsb_codename : "trusty" )
       end
       package "borgbackup"
+    else
+      raise 'unsupported Ubuntu Version'
     end
   end
 end

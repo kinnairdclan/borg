@@ -38,33 +38,32 @@ include BorgChef::Helpers
 
 action :create do
 
-  user = user.nil? ? node["borg"]["backup_user"] : user
+  user ||= node["borg"]["backup_user"]
   new_resource.user = user
 
-  borg_cache_dir = borg_cache_dir.nil? ? "#{node["etc"]["passwd"][user]["dir"]}/.cache/borg" : borg_cache_dir
-  passphrase = passphrase.nil? ? node["borg"]["repository_passphrase"] : passphrase
-
-  borg_rsh = borg_rsh.nil? ? node["borg"]["borg_rsh"] : borg_rsh
+  borg_cache_dir ||= "#{node["etc"]["passwd"][user]["dir"]}/.cache/borg"
+  passphrase ||= node["borg"]["repository_passphrase"]
+  borg_rsh ||= node["borg"]["borg_rsh"]
   
-  prune_args = assemble_universal_args
-  prune_args += construct_arg("dry-run", dry_run)
-  prune_args += construct_arg("stats", stats)
-  prune_args += construct_arg("keep-within", keep_within)
-  prune_args += construct_arg("keep-hourly", keep_hourly)
-  prune_args += construct_arg("keep-daily", keep_daily)
-  prune_args += construct_arg("keep-weekly", keep_weekly)
-  prune_args += construct_arg("keep-monthly", keep_monthly)
-  prune_args += construct_arg("keep-yearly", keep_yearly)
-  prune_args += construct_arg("prefix", prefix)
-  prune_args += construct_arg("save-space", save_space)
+  prune_args = assemble_universal_args +
+  construct_arg("dry-run", dry_run) +
+  construct_arg("stats", stats) +
+  construct_arg("keep-within", keep_within) +
+  construct_arg("keep-hourly", keep_hourly) +
+  construct_arg("keep-daily", keep_daily) +
+  construct_arg("keep-weekly", keep_weekly) +
+  construct_arg("keep-monthly", keep_monthly) +
+  construct_arg("keep-yearly", keep_yearly) +
+  construct_arg("prefix", prefix) +
+  construct_arg("save-space", save_space)
 
   cmd = "borg prune #{prune_args} #{repository}"
 
   if automated
 
-    cmd = cmd.prepend("BORG_PASSPHRASE=#{passphrase} ") if passphrase
-    cmd = cmd.prepend("BORG_RSH=#{borg_rsh} ") if borg_rsh
-    cmd = cmd.prepend("BORG_CACHE_DIR=#{borg_cache_dir} ") if borg_cache_dir
+    cmd.prepend("BORG_PASSPHRASE=#{passphrase} ") if passphrase
+    cmd.prepend("BORG_RSH=#{borg_rsh} ") if borg_rsh
+    cmd.prepend("BORG_CACHE_DIR=#{borg_cache_dir} ") if borg_cache_dir
 
     directory "#{::File.dirname(script)}" do
       action :create

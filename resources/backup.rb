@@ -50,29 +50,28 @@ include BorgChef::Helpers
 
 action :create do
 
-  user = user.nil? ? node["borg"]["backup_user"] : user
+  user ||= node["borg"]["backup_user"]
   new_resource.user = user
 
-  borg_cache_dir = borg_cache_dir.nil? ? "#{node["etc"]["passwd"][user]["dir"]}/.cache/borg" : borg_cache_dir
-  passphrase = passphrase.nil? ? node["borg"]["repository_passphrase"] : passphrase
-
-  borg_rsh = borg_rsh.nil? ? node["borg"]["borg_rsh"] : borg_rsh
+  borg_cache_dir ||= "#{node["etc"]["passwd"][user]["dir"]}/.cache/borg"
+  passphrase ||= node["borg"]["repository_passphrase"]
+  borg_rsh ||= node["borg"]["borg_rsh"]
   
-  create_args = assemble_universal_args
-  create_args += construct_arg("compression", compression)
-  create_args += construct_arg("exclude", exclude)
-  create_args += construct_arg("exclude-from", exclude_from_file)
-  create_args += construct_arg("exclude-if-file-present", exclude_if_file_present)
-  create_args += construct_arg("stats", stats)
-  create_args += construct_arg("keep-tag-files", keep_tag_files)
-  create_args += construct_arg("checkpoint-interval", checkpoint_interval)
-  create_args += construct_arg("one-file-system", one_file_system)
-  create_args += construct_arg("numeric-owner", numeric_owner)
-  create_args += construct_arg("timestamp", timestamp)
-  create_args += construct_arg("chunker-params", chunker_params)
-  create_args += construct_arg("ignore-inode", ignore_inode)
-  create_args += construct_arg("read-special", read_special)
-  create_args += construct_arg("dry-run", dry_run)
+  create_args = assemble_universal_args +
+  construct_arg("compression", compression) +
+  construct_arg("exclude", exclude) +
+  construct_arg("exclude-from", exclude_from_file) +
+  construct_arg("exclude-if-file-present", exclude_if_file_present) +
+  construct_arg("stats", stats) +
+  construct_arg("keep-tag-files", keep_tag_files) +
+  construct_arg("checkpoint-interval", checkpoint_interval) +
+  construct_arg("one-file-system", one_file_system) +
+  construct_arg("numeric-owner", numeric_owner) +
+  construct_arg("timestamp", timestamp) +
+  construct_arg("chunker-params", chunker_params) +
+  construct_arg("ignore-inode", ignore_inode) +
+  construct_arg("read-special", read_special) +
+  construct_arg("dry-run", dry_run)
 
   backup_list = backup.join(" ")
 
@@ -80,9 +79,9 @@ action :create do
 
   if automated
 
-    cmd = cmd.prepend("BORG_PASSPHRASE=#{passphrase} ") if passphrase
-    cmd = cmd.prepend("BORG_RSH=#{borg_rsh} ") if borg_rsh
-    cmd = cmd.prepend("BORG_CACHE_DIR=#{borg_cache_dir} ") if borg_cache_dir
+    cmd.prepend("BORG_PASSPHRASE=#{passphrase} ") if passphrase
+    cmd.prepend("BORG_RSH=#{borg_rsh} ") if borg_rsh
+    cmd.prepend("BORG_CACHE_DIR=#{borg_cache_dir} ") if borg_cache_dir
 
     directory "#{::File.dirname(script)}" do
       action :create
@@ -125,13 +124,12 @@ end
 
 action :delete do
 
-  user = user.nil? ? node["borg"]["backup_user"] : user
+  user ||= node["borg"]["backup_user"]
   new_resource.user = user
 
-  borg_cache_dir = borg_cache_dir.nil? ? "#{node["etc"]["passwd"][user]["dir"]}/.cache/borg" : borg_cache_dir
-  passphrase = passphrase.nil? ? node["borg"]["repository_passphrase"] : passphrase
-
-  borg_rsh = borg_rsh.nil? ? node["borg"]["borg_rsh"] : borg_rsh
+  borg_cache_dir ||= "#{node["etc"]["passwd"][user]["dir"]}/.cache/borg"
+  passphrase ||= node["borg"]["repository_passphrase"]
+  borg_rsh ||= node["borg"]["borg_rsh"]
 
   if automated
 
@@ -151,10 +149,10 @@ action :delete do
 
   else
 
-    delete_args = assemble_universal_args
-    delete_args += construct_arg("stats", stats)
-    delete_args += construct_arg("cache-only", cache_only)
-    delete_args += construct_arg("save-space", save_space)
+    delete_args = assemble_universal_args +
+    construct_arg("stats", stats) +
+    construct_arg("cache-only", cache_only) +
+    construct_arg("save-space", save_space)
 
     cmd = "borg delete #{delete_args} #{repository}::#{archive_name}"
 

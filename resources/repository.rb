@@ -25,19 +25,16 @@ include BorgChef::Helpers
 
 action :create do
 
-  user = user.nil? ? node["borg"]["backup_user"] : user
+  user ||= node["borg"]["backup_user"]
   new_resource.user = user
 
-  borg_cache_dir = borg_cache_dir.nil? ? "#{node["etc"]["passwd"][user]["dir"]}/.cache/borg" : borg_cache_dir
-  passphrase = passphrase.nil? ? node["borg"]["repository_passphrase"] : passphrase
-
-  borg_rsh = borg_rsh.nil? ? node["borg"]["borg_rsh"] : borg_rsh
+  borg_cache_dir ||= "#{node["etc"]["passwd"][user]["dir"]}/.cache/borg"
+  passphrase ||= node["borg"]["repository_passphrase"]
+  borg_rsh ||= node["borg"]["borg_rsh"]
 
   args = assemble_universal_args
 
-  ["none", "keyfile", "repokey"].each do |enc|
-    construct_arg("encryption", encryption) if encryption.eql? enc
-  end
+  ["none", "keyfile", "repokey"].each { |enc| construct_arg('encryption', encryption) if encryption == enc }
 
   execute "borgbackup init of repository #{repo_path}" do
     command "borg init #{args} #{repo_path}"
@@ -53,18 +50,16 @@ end
              
 action :delete do
 
-  user = user.nil? ? node["borg"]["backup_user"] : user
+  user ||= node["borg"]["backup_user"]
   new_resource.user = user
 
-  borg_cache_dir = borg_cache_dir.nil? ? "#{node["etc"]["passwd"][user]["dir"]}/.cache/borg" : borg_cache_dir
-  passphrase = passphrase.nil? ? node["borg"]["repository_passphrase"] : passphrase
+  borg_cache_dir ||= "#{node["etc"]["passwd"][user]["dir"]}/.cache/borg"
+  passphrase ||= node["borg"]["repository_passphrase"]
+  borg_rsh ||= node["borg"]["borg_rsh"]
 
-  borg_rsh = borg_rsh.nil? ? node["borg"]["borg_rsh"] : borg_rsh
-
-  args = assemble_universal_args
-
-  args += construct_arg("cache-only", cache_only)
-  args += construct_arg("save-space", save_space)
+  args = assemble_universal_args +
+  construct_arg("cache-only", cache_only) +
+  construct_arg("save-space", save_space)
 
   execute "borgbackup delete of repository #{repo_path}" do
     command "borg delete #{args} #{repo_path}"
